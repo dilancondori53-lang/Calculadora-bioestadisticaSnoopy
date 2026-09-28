@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>🐾 Calculadora de Bioestadística</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF8EC;
+    --paper:#FFFFFF;
+    --ink:#2B2118;
+    --red:#E4572E;
+    --red-dark:#C8451F;
+    --mustard:#F4C95D;
+    --sky:#A9D6D9;
+    --sky-dark:#6FB6BB;
+    --line:#EADFC9;
+    --shadow: 6px 6px 0 var(--ink);
+  }
+  *{box-sizing:border-box;}
+  html{color-scheme:light;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    min-height:100%;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:24px 18px 60px;}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;align-items:center;gap:18px;
+    margin-bottom:28px;flex-wrap:wrap;
+  }
+  .doghouse{
+    width:72px;height:72px;flex:0 0 auto;
+  }
+  h1{
+    font-family:'Fredoka',sans-serif;
+    font-weight:700;
+    font-size:clamp(1.4rem,4vw,2.1rem);
+    margin:0;
+    color:var(--red-dark);
+    line-height:1.15;
+  }
+  .subtitle{
+    margin:4px 0 0;
+    color:#6b5c46;
+    font-weight:600;
+    font-size:.95rem;
+  }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:22px 22px 26px;
+    margin-bottom:34px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:8px;
+    background:repeating-linear-gradient(90deg, var(--red) 0 18px, var(--mustard) 18px 36px);
+  }
+  .step-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--sky);
+    border:2px solid var(--ink);
+    border-radius:999px;
+    padding:4px 14px;
+    font-family:'Fredoka',sans-serif;
+    font-weight:600;
+    font-size:.85rem;
+    margin-bottom:10px;
+  }
+  .card h2{
+    font-family:'Fredoka',sans-serif;
+    font-size:1.35rem;
+    margin:6px 0 18px;
+    color:var(--ink);
+  }
+
+  /* ---------- Form ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-bottom:20px;
+  }
+  label{
+    font-weight:800;
+    font-size:.85rem;
+    display:block;
+    margin-bottom:6px;
+    color:#5a4a35;
+  }
+  .field{position:relative;}
+  input[type=number]{
+    width:100%;
+    padding:11px 14px;
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    font-family:'Nunito',sans-serif;
+    font-weight:800;
+    font-size:1rem;
+    background:#fffef9;
+    color:var(--ink);
+    -moz-appearance:textfield;
+  }
+  input[type=number]:focus{
+    outline:3px solid var(--mustard);
+    outline-offset:1px;
+  }
+  .unit{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-weight:700; color:#9a8a6f; pointer-events:none; font-size:.85rem;
+  }
+
+  button.calc{
+    font-family:'Fredoka',sans-serif;
+    font-weight:600;
+    font-size:1.05rem;
+    background:var(--red);
+    color:#fff;
+    border:3px solid var(--ink);
+    border-radius:14px;
+    padding:12px 26px;
+    cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .08s ease;
+  }
+  button.calc:hover{background:var(--red-dark);}
+  button.calc:active{transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink);}
+
+  /* ---------- Results: population summary ---------- */
+  .pop-summary{
+    display:flex; gap:14px; flex-wrap:wrap;
+    margin:18px 0 4px;
+  }
+  .pill{
+    flex:1; min-width:140px;
+    background:var(--cream);
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:10px 14px;
+  }
+  .pill .n{font-family:'Fredoka',sans-serif; font-size:1.3rem; font-weight:700;}
+  .pill .l{font-size:.78rem; font-weight:700; color:#6b5c46;}
+
+  /* ---------- 2x2 table ---------- */
+  .table-wrap{overflow-x:auto; margin-top:22px;}
+  table.contingency{
+    border-collapse:collapse;
+    width:100%;
+    min-width:480px;
+    font-family:'Nunito',sans-serif;
+  }
+  table.contingency th, table.contingency td{
+    border:2px solid var(--ink);
+    padding:12px 10px;
+    text-align:center;
+  }
+  table.contingency thead th{
+    background:var(--mustard);
+    font-family:'Fredoka',sans-serif;
+    font-size:.9rem;
+  }
+  table.contingency td.corner, table.contingency th.corner{
+    background:var(--sky);
+    font-family:'Fredoka',sans-serif;
+  }
+  table.contingency td.label{
+    background:var(--sky);
+    font-weight:800;
+    font-family:'Fredoka',sans-serif;
+    font-size:.85rem;
+  }
+  table.contingency td.vp{background:#DFF3D8;}
+  table.contingency td.fn{background:#FBE3D4;}
+  table.contingency td.fp{background:#FBE3D4;}
+  table.contingency td.vn{background:#DFF3D8;}
+  table.contingency .big{font-weight:800; font-size:1.05rem;}
+  table.contingency .small{font-size:.72rem; color:#7a6a52; display:block; margin-top:2px;}
+  table.contingency td.total{
+    background:var(--red);
+    color:#FFFFFF;
+    font-weight:800;
+    font-family:'Fredoka',sans-serif;
+  }
+  table.contingency tr:last-child td.total{
+    background:var(--ink);
+    color:#FFFFFF;
+  }
+
+  /* ---------- Step 2 formula box ---------- */
+  .formula-box{
+    display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;
+    margin-top:6px;
+  }
+  .explain{flex:1 1 260px; font-weight:600; line-height:1.5;}
+  .formula-steps{flex:1 1 260px;}
+  .formula-line{
+    background:var(--cream);
+    border:2px dashed var(--sky-dark);
+    border-radius:12px;
+    padding:10px 14px;
+    margin-bottom:10px;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:.95rem;
+  }
+  .result-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--red);
+    color:#fff;
+    border:3px solid var(--ink);
+    border-radius:14px;
+    padding:10px 20px;
+    font-family:'Fredoka',sans-serif;
+    font-weight:700;
+    font-size:1.2rem;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .badges{display:flex; gap:16px; flex-wrap:wrap; margin-top:16px;}
+
+  .hint{
+    font-size:.82rem; color:#7a6a52; font-weight:700; margin-top:8px;
+  }
+  .placeholder{color:#a0937a; font-weight:700; font-style:italic; padding:14px 0;}
+
+  footer{
+    text-align:center; color:#9a8a6f; font-size:.8rem; font-weight:700;
+    margin-top:10px;
+  }
+
+  /* Tema fijo claro a propósito: evita que el modo oscuro del celular
+     invierta colores y deje texto invisible sobre fondos claros. */
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <svg class="doghouse" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="90" rx="34" ry="6" fill="#00000022"/>
+      <circle cx="50" cy="48" r="30" fill="#FFFFFF" stroke="#2B2118" stroke-width="3"/>
+      <path d="M22 40 Q8 15 26 20 Q30 34 34 42Z" fill="#2B2118"/>
+      <path d="M78 40 Q92 15 74 20 Q70 34 66 42Z" fill="#2B2118"/>
+      <circle cx="39" cy="46" r="3.2" fill="#2B2118"/>
+      <circle cx="61" cy="46" r="3.2" fill="#2B2118"/>
+      <ellipse cx="50" cy="55" rx="4.5" ry="3.5" fill="#2B2118"/>
+      <path d="M50 58 Q50 64 44 64" stroke="#2B2118" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M46 66 Q50 70 54 66" stroke="#2B2118" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Calculadora de Bioestadística</h1>
+      <p class="subtitle">Tabla de contingencia 2×2 · VPP · VPN — con toda la buena onda 🐶</p>
+    </div>
+  </header>
+
+  <!-- ================= STEP 1 ================= -->
+  <section class="card">
+    <span class="step-tag">🦴 Calculadora 1</span>
+    <h2>Construcción de la tabla de contingencia 2×2 (población basal)</h2>
+
+    <div class="grid">
+      <div class="field">
+        <label for="poblacion">Población total (N)</label>
+        <input type="number" id="poblacion" value="100000" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="prevalencia">Prevalencia (P)</label>
+        <input type="number" id="prevalencia" value="1.5" min="0" max="100" step="0.01">
+        <span class="unit">%</span>
+      </div>
+      <div class="field">
+        <label for="sensibilidad">Sensibilidad (S)</label>
+        <input type="number" id="sensibilidad" value="96" min="0" max="100" step="0.01">
+        <span class="unit">%</span>
+      </div>
+      <div class="field">
+        <label for="especificidad">Especificidad (E)</label>
+        <input type="number" id="especificidad" value="93" min="0" max="100" step="0.01">
+        <span class="unit">%</span>
+      </div>
+    </div>
+
+    <button class="calc" onclick="calcular()">🐾 Calcular tabla</button>
+
+    <div id="resultadosPaso1"></div>
+  </section>
+
+  <!-- ================= STEP 2 (calculadora aparte e independiente) ================= -->
+  <section class="card">
+    <span class="step-tag">🦴 Calculadora 2</span>
+    <h2>Cálculo del Valor Predictivo Positivo (VPP) y Valor Predictivo Negativo (VPN)</h2>
+    <p class="hint" style="margin-top:-8px;margin-bottom:16px;">Calculadora independiente: ingresá tus propios VP, FP, FN y VN de cualquier tabla 2×2.</p>
+
+    <div class="grid">
+      <div class="field">
+        <label for="vp2">Verdaderos Positivos (VP)</label>
+        <input type="number" id="vp2" value="" min="0" step="1" placeholder="Ej: 1440">
+      </div>
+      <div class="field">
+        <label for="fp2">Falsos Positivos (FP)</label>
+        <input type="number" id="fp2" value="" min="0" step="1" placeholder="Ej: 6895">
+      </div>
+      <div class="field">
+        <label for="fn2">Falsos Negativos (FN)</label>
+        <input type="number" id="fn2" value="" min="0" step="1" placeholder="Ej: 60">
+      </div>
+      <div class="field">
+        <label for="vn2">Verdaderos Negativos (VN)</label>
+        <input type="number" id="vn2" value="" min="0" step="1" placeholder="Ej: 91605">
+      </div>
+    </div>
+
+    <button class="calc" onclick="calcularVPPVPN()">🐾 Calcular VPP y VPN</button>
+
+    <div id="resultadosPaso2" style="margin-top:20px;">
+      <p class="placeholder">Ingresá los valores de VP, FP, FN y VN, y presioná calcular. 🐕</p>
+    </div>
+  </section>
+
+  <footer>Hecho con 🐾 para tus cálculos de bioestadística</footer>
+</div>
+
+<script>
+function fmt(n, dec=0){
+  return Number(n).toLocaleString('es-ES', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+}
+
+function calcular(){
+  const N = parseFloat(document.getElementById('poblacion').value) || 0;
+  const P = parseFloat(document.getElementById('prevalencia').value) || 0;
+  const S = parseFloat(document.getElementById('sensibilidad').value) || 0;
+  const E = parseFloat(document.getElementById('especificidad').value) || 0;
+
+  const enfermos = N * (P/100);
+  const sanos = N - enfermos;
+
+  const VP = enfermos * (S/100);
+  const FN = enfermos - VP;
+  const VN = sanos * (E/100);
+  const FP = sanos - VN;
+
+  const paso1 = document.getElementById('resultadosPaso1');
+  paso1.innerHTML = `
+    <div class="pop-summary">
+      <div class="pill"><div class="n">${fmt(enfermos,0)}</div><div class="l">Enfermos = N × P</div></div>
+      <div class="pill"><div class="n">${fmt(sanos,0)}</div><div class="l">Sanos = N − Enfermos</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="contingency">
+        <thead>
+          <tr>
+            <th class="corner"></th>
+            <th>Enfermos</th>
+            <th>Sanos</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Prueba (+)</td>
+            <td class="vp"><span class="big">${fmt(VP,0)}</span><span class="small">VP = Enfermos × S</span></td>
+            <td class="fp"><span class="big">${fmt(FP,0)}</span><span class="small">FP = Sanos − VN</span></td>
+            <td class="total">${fmt(VP+FP,0)}</td>
+          </tr>
+          <tr>
+            <td class="label">Prueba (−)</td>
+            <td class="fn"><span class="big">${fmt(FN,0)}</span><span class="small">FN = Enfermos − VP</span></td>
+            <td class="vn"><span class="big">${fmt(VN,0)}</span><span class="small">VN = Sanos × E</span></td>
+            <td class="total">${fmt(FN+VN,0)}</td>
+          </tr>
+          <tr>
+            <td class="total">Total</td>
+            <td class="total">${fmt(enfermos,0)}</td>
+            <td class="total">${fmt(sanos,0)}</td>
+            <td class="total">${fmt(N,0)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">VP = Verdaderos Positivos · FN = Falsos Negativos · VN = Verdaderos Negativos · FP = Falsos Positivos</p>
+  `;
+}
+
+// ---------- Paso 2: calculadora independiente de VPP y VPN ----------
+function calcularVPPVPN(){
+  const VP = parseFloat(document.getElementById('vp2').value) || 0;
+  const FP = parseFloat(document.getElementById('fp2').value) || 0;
+  const FN = parseFloat(document.getElementById('fn2').value) || 0;
+  const VN = parseFloat(document.getElementById('vn2').value) || 0;
+
+  const VPP = (VP + FP) > 0 ? (VP / (VP + FP)) * 100 : 0;
+  const VPN = (VN + FN) > 0 ? (VN / (VN + FN)) * 100 : 0;
+
+  const paso2 = document.getElementById('resultadosPaso2');
+  paso2.innerHTML = `
+    <div class="formula-box">
+      <div class="explain">
+        <p><strong>VPP</strong>: probabilidad de que una persona realmente tenga la enfermedad cuando la prueba resulta positiva.</p>
+        <p><strong>VPN</strong>: probabilidad de que una persona realmente esté sana cuando la prueba resulta negativa.</p>
+      </div>
+      <div class="formula-steps">
+        <div class="formula-line">VPP = VP / (VP + FP) × 100</div>
+        <div class="formula-line">VPP = ${fmt(VP,0)} / (${fmt(VP,0)} + ${fmt(FP,0)}) × 100</div>
+        <div class="formula-line">VPN = VN / (VN + FN) × 100</div>
+        <div class="formula-line">VPN = ${fmt(VN,0)} / (${fmt(VN,0)} + ${fmt(FN,0)}) × 100</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="result-badge">🐾 VPP = ${fmt(VPP,2)}%</span>
+      <span class="result-badge">🐾 VPN = ${fmt(VPN,2)}%</span>
+    </div>
+  `;
+}
+
+// Al cargar, se muestra la tabla del Paso 1 con los valores de ejemplo
+// (el Paso 2 queda vacío y listo para que ingreses tus propios datos)
+window.addEventListener('DOMContentLoaded', calcular);
+</script>
+</body>
+</html>
